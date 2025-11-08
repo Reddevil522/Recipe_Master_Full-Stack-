@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Recipe Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="Style.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- AUTH MODAL (appears immediately on page open) -->
+    <div id="auth-modal" class="modal auth-modal" aria-hidden="true" role="dialog" aria-labelledby="auth-title">
+        <div class="modal-content auth-content">
+            <button class="modal-close" data-close-auth aria-label="Close auth"><i class="fas fa-times"></i></button>
+            <div class="auth-grid">
+                <div class="auth-left">
+                    <h2 id="auth-title">Welcome to Recipe Master</h2>
+                    <p class="auth-sub">Login as Admin, Login as User or Create a new account to continue.</p>
+
+                    <div class="tabs" role="tablist">
+                        <button class="tab active" data-tab="user-login" role="tab" aria-selected="true">User
+                            Login</button>
+                        <button class="tab" data-tab="user-register" role="tab" aria-selected="false">Register</button>
+                        <button class="tab" data-tab="admin-login" role="tab" aria-selected="false">Admin Login</button>
+                    </div>
+
+                    <div class="auth-forms">
+                        <!-- User Login -->
+                        <form id="user-login" class="auth-form" novalidate>
+                            <label><span>Email</span><input type="email" id="u_email" required
+                                    placeholder="you@domain.com"></label>
+                            <label><span>Password</span>
+                                <div class="pw-field">
+                                    <input type="password" id="u_password" required>
+                                    <button type="button" class="pw-toggle" data-target="u_password"
+                                        aria-label="Show/hide"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </label>
+                            <label class="inline"><input type="checkbox" id="u_remember"> Remember me</label>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-right-to-bracket"></i>
+                                    Login</button>
+                            </div>
+                        </form>
+
+                        <!-- Register -->
+                        <form id="user-register" class="auth-form" style="display:none" novalidate>
+                            <label><span>Name</span><input type="text" id="r_name" required
+                                    placeholder="Your name"></label>
+                            <label><span>Email</span><input type="email" id="r_email" required
+                                    placeholder="you@domain.com"></label>
+                            <label><span>Password</span>
+                                <div class="pw-field">
+                                    <input type="password" id="r_password" required>
+                                    <button type="button" class="pw-toggle" data-target="r_password"
+                                        aria-label="Show/hide"><i class="fas fa-eye"></i></button>
+                                </div>
+                                <div id="pw-strength" class="pw-strength"><span></span></div>
+                            </label>
+                            <label><span>Confirm Password</span><input type="password" id="r_password2"
+                                    required></label>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus"></i>
+                                    Register</button>
+                            </div>
+                        </form>
+
+                        <!-- Admin Login -->
+                        <form id="admin-login" class="auth-form" style="display:none" novalidate>
+                            <label><span>Admin Username</span><input type="text" id="a_user" required
+                                    placeholder="admin"></label>
+                            <label><span>Password</span>
+                                <div class="pw-field">
+                                    <input type="password" id="a_password" required>
+                                    <button type="button" class="pw-toggle" data-target="a_password"
+                                        aria-label="Show/hide"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </label>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-user-shield"></i> Admin
+                                    Login</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="auth-right">
+                    <div class="auth-info">
+                        <h3>Why register?</h3>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Save & manage your favorite recipes</li>
+                            <li><i class="fas fa-check-circle"></i> Add and edit recipes (admin/user as allowed)</li>
+                            <li><i class="fas fa-check-circle"></i> Fast access with "Remember me"</li>
+                        </ul>
+                        <p class="muted">This demo stores user info in your browser (localStorage). For production,
+                            integrate server-side auth.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Toggle (Top Right Corner) -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark">
+        <i class="fas fa-sun" id="theme-icon"></i>
+    </button>
+
+    <!-- User Profile Menu -->
+    <div id="user-menu" class="user-menu" style="display: none;">
+        <button class="user-avatar" id="user-avatar-btn">
+            <i class="fas fa-user-circle"></i>
+            <span id="user-name-display"></span>
+        </button>
+        <div class="user-dropdown" id="user-dropdown">
+            <div class="user-info">
+                <div class="user-avatar-large">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div>
+                    <div class="user-name" id="dropdown-user-name"></div>
+                    <div class="user-role" id="dropdown-user-role"></div>
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <div class="container header-content">
+            <div class="brand-section">
+                <h1 class="brand"><i class="fas fa-utensils"></i> Recipe Master</h1>
+                <p class="subtitle">Your Full-Stack Culinary Journey Starts Here!</p>
+            </div>
+
+            <div class="header-actions">
+                <button id="add-recipe-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Recipe
+                </button>
+                
+                <button id="suggest-recipe-btn" class="btn btn-suggest" style="display: none;">
+                    <i class="fas fa-lightbulb"></i> Suggest Recipe
+                </button>
+
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search recipes..." aria-label="Search recipes">
+                    <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Super Admin: Admin Management Section -->
+        <div id="admin-management-section" style="display: none;">
+            <div class="admin-header">
+                <h2><i class="fas fa-user-shield"></i> Admin Management</h2>
+                <button id="add-admin-btn" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Add Admin
+                </button>
+            </div>
+            <div id="admin-list" class="admin-container"></div>
+        </div>
+
+        <!-- Admin: Recipe Suggestions Section -->
+        <div id="suggestions-section" style="display: none;">
+            <div class="suggestions-header">
+                <h2><i class="fas fa-inbox"></i> Recipe Suggestions <span id="suggestion-count" class="badge">0</span></h2>
+                <button id="toggle-suggestions" class="btn btn-secondary">
+                    <i class="fas fa-chevron-down"></i> <span>Show Suggestions</span>
+                </button>
+            </div>
+            <div id="suggestions-list" class="suggestions-container" style="display: none;"></div>
+        </div>
+
+        <ul id="recipe-list" class="recipe-list" aria-live="polite"></ul>
+
+        <!-- ⭐ HTML template for each recipe card (buttons live here) -->
+        <template id="recipe-card">
+            <li>
+                <img data-ref="img" src="" alt="Recipe"
+                    onerror="this.style.display='none'">
+                <div class="recipe-card-content">
+                    <h3 data-ref="title">Recipe Title</h3>
+                    <div class="recipe-meta" data-ref="meta"></div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="view-btn" data-action="view"><i class="fas fa-eye"></i> View</button>
+                    <button class="edit-btn" data-action="edit"><i class="fas fa-pen"></i> Edit</button>
+                    <button class="delete-btn" data-action="delete"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </li>
+        </template>
+    </main>
+
+    <!-- View Recipe Modal -->
+    <div id="view-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="view-title">
+        <div class="modal-content">
+            <button class="modal-close" data-close-modal aria-label="Close"><i class="fas fa-times"></i></button>
+            <div class="view-grid">
+                <div class="view-media">
+                    <img id="view-image" src="" alt="Recipe image" />
+                </div>
+                <div class="view-body">
+                    <h2 id="view-title"></h2>
+                    <div class="recipe-meta meta-inline" id="view-meta"></div>
+
+                    <section>
+                        <h3>Ingredients</h3>
+                        <ul id="view-ingredients" class="bullet-list"></ul>
+                    </section>
+
+                    <section>
+                        <h3>Instructions</h3>
+                        <ol id="view-instructions" class="number-list"></ol>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Admin Modal -->
+    <div id="add-admin-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="add-admin-title">
+        <div class="modal-content">
+            <button class="modal-close" data-close-modal aria-label="Close"><i class="fas fa-times"></i></button>
+            <h2 id="add-admin-title"><i class="fas fa-user-shield"></i> Add New Admin</h2>
+            <p class="suggest-subtitle">Create a new admin account with full recipe management access</p>
+
+            <form id="add-admin-form" novalidate>
+                <div class="form-grid">
+                    <label>
+                        <span>Admin Name *</span>
+                        <input type="text" id="admin_name" required placeholder="John Doe" />
+                    </label>
+
+                    <label>
+                        <span>Username *</span>
+                        <input type="text" id="admin_username" required placeholder="johndoe" />
+                    </label>
+
+                    <label class="full">
+                        <span>Password *</span>
+                        <div class="pw-field">
+                            <input type="password" id="admin_password" required />
+                            <button type="button" class="pw-toggle" data-target="admin_password" aria-label="Show/hide">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="admin-pw-strength" class="pw-strength"><span></span></div>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submit-admin" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Create Admin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recipe Suggestion Modal -->
+    <div id="suggest-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="suggest-title">
+        <div class="modal-content">
+            <button class="modal-close" data-close-modal aria-label="Close"><i class="fas fa-times"></i></button>
+            <h2 id="suggest-title"><i class="fas fa-lightbulb"></i> Suggest a Recipe</h2>
+            <p class="suggest-subtitle">Share your favorite recipe with the admin for review!</p>
+
+            <form id="suggest-form" novalidate>
+                <div class="form-grid">
+                    <label>
+                        <span>Recipe Title *</span>
+                        <input type="text" id="suggest_title" required placeholder="e.g., Grandma's Special Biryani" />
+                    </label>
+
+                    <label>
+                        <span>Image URL (optional)</span>
+                        <input type="url" id="suggest_image_url" placeholder="https://..." />
+                    </label>
+
+                    <label>
+                        <span>Ingredients * (comma separated)</span>
+                        <input type="text" id="suggest_ingredients" required placeholder="Rice, Chicken, Spices..." />
+                    </label>
+
+                    <label class="full">
+                        <span>Instructions * (one step per line)</span>
+                        <textarea id="suggest_instructions" rows="6" required placeholder="Step 1: Wash and soak rice
+Step 2: Marinate chicken
+Step 3: ..."></textarea>
+                    </label>
+
+                    <label>
+                        <span>Prep Time (minutes)</span>
+                        <input type="number" id="suggest_prep_time" min="0" value="0" />
+                    </label>
+
+                    <label>
+                        <span>Cook Time (minutes)</span>
+                        <input type="number" id="suggest_cook_time" min="0" value="0" />
+                    </label>
+
+                    <label>
+                        <span>Servings</span>
+                        <input type="number" id="suggest_servings" min="1" value="1" />
+                    </label>
+
+                    <label>
+                        <span>Difficulty</span>
+                        <select id="suggest_difficulty">
+                            <option>Easy</option>
+                            <option>Medium</option>
+                            <option>Hard</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Cuisine Type</span>
+                        <input type="text" id="suggest_cuisine_type" placeholder="Indian, Italian, Chinese..." />
+                    </label>
+                    
+                    <label class="full">
+                        <span>Additional Notes (optional)</span>
+                        <textarea id="suggest_notes" rows="3" placeholder="Any special tips or story behind this recipe..."></textarea>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submit-suggestion" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Suggestion
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Recipe Modal -->
+    <div id="add-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="form-title">
+        <div class="modal-content">
+            <button class="modal-close" data-close-modal aria-label="Close"><i class="fas fa-times"></i></button>
+            <h2 id="form-title">Add Recipe</h2>
+
+            <form id="recipe-form" novalidate>
+                <div class="form-grid">
+                    <label>
+                        <span>Title</span>
+                        <input type="text" id="title" required />
+                    </label>
+
+                    <label>
+                        <span>Image URL</span>
+                        <input type="url" id="image_url" placeholder="https://..." />
+                    </label>
+
+                    <label>
+                        <span>Ingredients (comma separated)</span>
+                        <input type="text" id="ingredients" placeholder="Tomato, Onion, ..." />
+                    </label>
+
+                    <label class="full">
+                        <span>Instructions (one step per line)</span>
+                        <textarea id="instructions" rows="6" placeholder="Step 1...
+Step 2..."></textarea>
+                    </label>
+
+                    <label>
+                        <span>Prep Time (min)</span>
+                        <input type="number" id="prep_time" min="0" value="0" />
+                    </label>
+
+                    <label>
+                        <span>Cook Time (min)</span>
+                        <input type="number" id="cook_time" min="0" value="0" />
+                    </label>
+
+                    <label>
+                        <span>Servings</span>
+                        <input type="number" id="servings" min="1" value="1" />
+                    </label>
+
+                    <label>
+                        <span>Difficulty</span>
+                        <select id="difficulty">
+                            <option>Easy</option>
+                            <option>Medium</option>
+                            <option>Hard</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Cuisine</span>
+                        <input type="text" id="cuisine_type" placeholder="Indian, Italian, ..." />
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="save-recipe" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="year"></span> Recipe Master</p>
+        </div>
+    </footer>
+
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    <script src="Script.js"></script>
+</body>
+
+</html>
